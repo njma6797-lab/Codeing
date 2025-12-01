@@ -1,0 +1,87 @@
+/* Reset & base */
+*{box-sizing:border-box}
+:root{
+  --bg-1:#07102a;
+  --bg-2:#081428;
+  --glass: rgba(255,255,255,0.06);
+  --card:#0b1220;
+  --muted:#b8c0d3;
+  --accent:#ffb703;
+  --accent-2:#7c3aed;
+  --glass-border: rgba(255,255,255,0.06);
+  --radius:14px;
+}
+html,body{height:100%;margin:0;font-family:Inter, system-ui, Arial, "Noto Sans Arabic", sans-serif;color:#e6eef8;background:var(--bg-1);-webkit-font-smoothing:antialiased}
+.page{min-height:100%; position:relative; overflow:hidden}
+
+/* Background layers */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.gradient-layer{position:absolute;inset:0;background:
+  radial-gradient(600px 500px at 10% 20%, rgba(124,58,237,0.18), transparent 10%),
+  radial-gradient(500px 400px at 85% 80%, rgba(255,183,3,0.10), transparent 12%),
+  linear-gradient(180deg, rgba(2,6,23,0.85), rgba(6,10,25,0.85));
+  mix-blend-mode:screen; filter:blur(18px); transform:translateZ(0);}
+
+/* subtle animated light overlay */
+.light-overlay{position:absolute;inset:0;background:
+  linear-gradient(120deg, rgba(255,255,255,0.03), rgba(255,255,255,0) 30%);animation:slowMove 12s linear infinite;opacity:0.8}
+@keyframes slowMove{0%{transform:translateX(-6%)}50%{transform:translateX(6%)}100%{transform:translateX(-6%)}}
+
+/* App container */
+.app{position:relative;z-index:2;max-width:1100px;margin:28px auto;padding:20px}
+
+/* header */
+.app-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(6px);box-shadow: 0 6px 30px rgba(2,6,23,0.6)}
+.left{display:flex;align-items:center;gap:12px}
+.logo{width:56px;height:56px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 6px 20px rgba(12,20,40,0.6)}
+.app-title{margin:0;font-size:20px;font-weight:800}
+.app-sub{margin:0;color:var(--muted);font-size:13px}
+
+/* buttons */
+.btn{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
+.btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#07102a;box-shadow:0 8px 30px rgba(124,58,237,0.12)}
+.btn[disabled]{opacity:0.5;cursor:not-allowed}
+.right{display:flex;gap:8px;align-items:center}
+
+/* nav */
+.nav{margin-top:16px;margin-bottom:8px;display:flex;flex-direction:column;gap:12px}
+.nav-grid{display:flex;gap:8px;flex-wrap:wrap}
+.nav-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#e6eef8;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800}
+.nav-btn.active{background:linear-gradient(90deg,rgba(255,183,3,0.12), rgba(124,58,237,0.08));box-shadow:0 6px 18px rgba(12,20,40,0.5)}
+.search-row{display:flex;gap:10px;align-items:center}
+#search{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:#e6eef8;font-size:15px}
+
+/* main list */
+.main{margin-top:8px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(2,6,23,0.6);position:relative;overflow:hidden}
+.card h3{margin:0 0 8px;font-size:18px}
+.card p.desc{margin:0 0 10px;color:var(--muted);font-size:13px}
+.code{font-family:monospace;font-weight:800;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(0,0,0,0.03));padding:8px;border-radius:8px;display:inline-block}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px}
+.actions{display:flex;gap:8px;align-items:center}
+.btn.copy{background:rgba(255,255,255,0.04);color:#fff;padding:8px 12px;border-radius:10px}
+.btn.call{background:linear-gradient(90deg,#10b981,#059669);color:#fff;padding:8px 12px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+
+/* badge op */
+.badge{position:absolute;left:14px;top:14px;padding:6px 10px;border-radius:10px;color:#08102a;font-weight:900;font-size:12px}
+.badge.orange{background:#ffb703}
+.badge.vodafone{background:#ff4b4b}
+.badge.etisalat{background:#22c1a9}
+.badge.we{background:#7c3aed}
+
+/* empty */
+.empty{padding:22px;color:var(--muted);text-align:center;font-weight:800}
+
+/* responsive */
+@media (max-width:720px){
+  .list{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .app{padding:12px}
+  .app-header{flex-direction:column;align-items:flex-start;gap:12px}
+}
+
+/* small animated accent */
+.card::after{
+  content:"";
+  position:absolute;right:-30%;top:-50%;width:180%;height:180%;background:radial-gradient(closest-side, rgba(255,255,255,0.03), transparent 30%);transform:rotate(12deg);pointer-events:none;mix-blend-mode:screen;
+}
