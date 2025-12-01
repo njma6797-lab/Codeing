@@ -1,0 +1,57 @@
+:root{
+  --bg:#071028; --card:#0f1724; --muted:#9aa4b2; --accent:#ff7a00;
+  --radius:12px; --glass: rgba(255,255,255,0.03); font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;padding:18px;background:linear-gradient(180deg,#031022,#071028);
+  color:#e6eef6;-webkit-font-smoothing:antialiased;
+}
+
+/* header */
+.site-header{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-bottom:12px}
+.site-header h1{color:var(--accent);margin:0;font-size:28px}
+.lead{color:var(--muted);margin:0;font-size:13px}
+
+/* layout */
+.layout{display:grid;grid-template-columns:260px 1fr;gap:18px}
+@media(max-width:800px){ .layout{grid-template-columns:1fr} }
+
+.sidebar{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+.network-list{display:flex;flex-direction:column;gap:10px}
+.net-btn{
+  padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:16px;
+  background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);color:var(--accent);
+  text-align:center;
+}
+
+/* content */
+.content{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:12px;min-height:240px}
+.network-title{font-size:22px;margin:0 0 12px 0;color:#fff}
+.codes-list{display:flex;flex-direction:column;gap:12px}
+.code-card{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03)}
+.code-left{display:flex;flex-direction:column;gap:6px}
+.code-text{font-family:monospace;font-size:18px}
+.code-desc{color:var(--muted);font-size:13px}
+.card-actions{display:flex;gap:8px}
+.action-btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+.action-btn.copy{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+.action-btn.call{background:var(--accent);color:#071229}
+
+/* service row */
+.service-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:16px}
+.service-btn{
+  padding:12px 14px;border-radius:12px;border:none;cursor:pointer;font-weight:700;
+  box-shadow:0 8px 22px rgba(0,0,0,0.4); color:#071229;
+  transition:transform .12s,box-shadow .12s;
+}
+.service-btn:hover{transform:translateY(-3px)}
+
+/* per-network color variants (applied as classes) */
+.service-btn.orange{background:linear-gradient(90deg,#ffb27a,#ffd9c4);box-shadow:0 12px 30px rgba(255,128,0,0.22)}
+.service-btn.vodafone{background:linear-gradient(90deg,#ff77a2,#ffd6e4);box-shadow:0 12px 30px rgba(255,34,119,0.22)}
+.service-btn.etisalat{background:linear-gradient(90deg,#9fff8a,#e7ffd8);box-shadow:0 12px 30px rgba(50,220,70,0.18)}
+.service-btn.we{background:linear-gradient(90deg,#9fe9ff,#dffbff);box-shadow:0 12px 30px rgba(0,200,255,0.18)}
+
+.site-footer{margin-top:18px;color:var(--muted);text-align:right;font-size:13px}
