@@ -1,85 +1,37 @@
 <!doctype html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>أكواد الشبكات — التطبيق السينمائي</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f172a" />
-  <link rel="icon" href="icons/icon-192.png" />
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>أكواد الشبكات</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body dir="rtl" class="page">
+<body>
+  <header class="site-header">
+    <h1>أكواد شبكات المحمول</h1>
+    <p class="lead">اختر الشبكة لعرض الأكواد — اضغط "نسخ" أو "اتصال" أو زر الخدمة للمزيد</p>
+  </header>
 
-  <!-- Cinematic animated background layers -->
-  <div id="bg">
-    <div class="gradient-layer"></div>
-    <canvas id="particles"></canvas>
-    <div class="light-overlay"></div>
-  </div>
+  <main class="layout">
+    <aside class="sidebar" aria-label="قائمة الشبكات">
+      <div id="network-list" class="network-list"></div>
+    </aside>
 
-  <!-- App container -->
-  <div class="app">
-    <header class="app-header">
-      <div class="left">
-        <img src="icons/icon-192.png" alt="logo" class="logo">
-        <div>
-          <h1 class="app-title">الشبكات</h1>
-          <p class="app-sub">أكواد أورنج، فودافون، اتصالات، WE — نسخ & اتصال & تثبيت</p>
-        </div>
+    <section class="content" aria-live="polite">
+      <h2 id="network-title" class="network-title">اختر شبكة</h2>
+      <div id="codes-list" class="codes-list"></div>
+
+      <div class="service-row" id="service-row" hidden>
+        <button id="cs-call" class="service-btn">اتصال بخدمة العملاء</button>
+        <button id="cs-site" class="service-btn">زيارة الموقع الرسمي</button>
       </div>
+    </section>
+  </main>
 
-      <div class="right">
-        <button id="installBtn" class="btn btn-primary">تثبيت</button>
-      </div>
-    </header>
+  <footer class="site-footer">
+    <small>ملاحظة: الأكواد قد تتغير — راجع مزود الخدمة إذا لم تعمل.</small>
+  </footer>
 
-    <nav class="nav">
-      <div class="nav-grid">
-        <button class="nav-btn active" data-op="all">الكل</button>
-        <button class="nav-btn" data-op="orange">أورنج</button>
-        <button class="nav-btn" data-op="vodafone">فودافون</button>
-        <button class="nav-btn" data-op="etisalat">اتصالات</button>
-        <button class="nav-btn" data-op="we">WE</button>
-      </div>
-
-      <div class="search-row">
-        <input id="search" placeholder="ابحث باسم الكود أو الوصف أو الرقم..." />
-        <button id="favToggle" class="btn">المفضلات</button>
-      </div>
-    </nav>
-
-    <main class="main">
-      <section id="list" class="list"></section>
-      <div id="empty" class="empty hidden">لا توجد نتائج — جرّب كلمة أخرى</div>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-inner">
-        <div>حقوق الملكية © <span id="year"></span> — تطبيق أكواد الشبكات</div>
-        <div class="small-note">ملاحظة: زر "اتصال" يفتح تطبيق المكالمات في هاتفك.</div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- embedded fallback data (سيتم استبدالها عند تحميل data.json) -->
-  <script id="embedded-data" type="application/json">[{"id":"sample","operator":"orange","title":"مثال","code":"*100#","desc":"مثال تجريبي"}]</script>
-
-  <!-- App JS -->
-  <script src="app.js" defer></script>
-
-  <!-- register service worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').catch(function(e){
-        console.warn('SW registration failed:', e);
-      });
-    }
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
