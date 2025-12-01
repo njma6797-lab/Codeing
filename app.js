@@ -1,208 +1,110 @@
-/* app.js */
-const DATA_URL = 'data.json';
-const listEl = document.getElementById('list');
-const searchEl = document.getElementById('search');
-const favToggle = document.getElementById('favToggle');
-const installBtn = document.getElementById('installBtn');
-const embeddedScript = document.getElementById('embedded-data');
-let allData = [];
-let showFavs = false;
-let deferredPrompt = null;
-
-// Utility: encode tel (يحوّل # إلى %23)
-const encodeTel = (code) => {
-  if (!code) return '';
-  let s = String(code).trim().replace(/\s+/g,'');
-  s = s.replace(/#/g, '%23').replace(/\+/g, '%2B');
-  return s;
-};
-
-// load data.json or fallback
+// app.js - يعرض الشبكات والأكواد ويطبّق أزرار النسخ والاتصال وزر الخدمة/الموقع
 async function loadData(){
-  try {
-    const res = await fetch(DATA_URL);
-    if(!res.ok) throw new Error('fetch fail');
-    const json = await res.json();
-    return json;
-  } catch(e){
-    try {
-      return JSON.parse(embeddedScript.textContent || '[]');
-    } catch(err){
-      return [];
-    }
+  try{
+    const res = await fetch('data.json');
+    if(!res.ok) throw new Error('فشل تحميل data.json');
+    return await res.json();
+  }catch(e){
+    console.error(e);
+    alert('خطأ في تحميل البيانات (data.json). ارفع الملف على نفس المجلد.');
+    return null;
   }
 }
 
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
-
-function getFavs(){ try { return JSON.parse(localStorage.getItem('fav_codes')||'[]'); } catch(e){ return []; } }
-function toggleFav(id){
-  const favs = getFavs();
-  const idx = favs.indexOf(id);
-  if(idx===-1) favs.push(id); else favs.splice(idx,1);
-  localStorage.setItem('fav_codes', JSON.stringify(favs));
+function $(sel){ return document.querySelector(sel) }
+function create(tag, attrs={}, children=[]){
+  const el = document.createElement(tag);
+  for(const k in attrs){
+    if(k === 'class') el.className = attrs[k];
+    else if(k.startsWith('on') && typeof attrs[k] === 'function') el.addEventListener(k.substring(2), attrs[k]);
+    else el.setAttribute(k, attrs[k]);
+  }
+  (Array.isArray(children)?children:[children]).flat().forEach(c=>{
+    if(typeof c === 'string') el.appendChild(document.createTextNode(c));
+    else if(c) el.appendChild(c);
+  });
+  return el;
 }
 
-function render(items){
-  listEl.innerHTML = '';
-  if(!items.length){
-    document.getElementById('empty').classList.remove('hidden');
-    return;
-  } else { document.getElementById('empty').classList.add('hidden'); }
+function copyText(text){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=> alert('نُسخ: ' + text)).catch(()=> fallbackCopy(text));
+  } else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); alert('نُسخ: ' + text); } catch(e){ alert('النسخ فشل — انسخ يدويًا: ' + text); }
+  ta.remove();
+}
 
-  const favs = getFavs();
+function dial(code){
+  const tel = 'tel:' + encodeURIComponent(code);
+  window.location.href = tel;
+}
+function openSite(url){
+  window.open(url, '_blank');
+}
 
-  items.forEach(it=>{
-    const card = document.createElement('article');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="badge ${escapeHtml(it.operator)}">${escapeHtml(it.operator || '')}</div>
-      <h3>${escapeHtml(it.title)}</h3>
-      <p class="desc">${escapeHtml(it.desc || '')}</p>
-      <div class="row">
-        <div class="code">${escapeHtml(it.code)}</div>
-        <div class="actions">
-          <button class="btn copy">نسخ</button>
-          <a class="btn call" href="tel:${encodeTel(it.code)}">اتصال</a>
-          <button class="btn fav">${favs.includes(it.id) ? '★' : '☆'}</button>
-        </div>
-      </div>
-    `;
-    // events
-    card.querySelector('.copy').addEventListener('click', ()=> {
-      copyText(it.code, card.querySelector('.copy'));
+function applyServiceStyle(networkId){
+  const callBtn = $('#cs-call');
+  const siteBtn = $('#cs-site');
+  callBtn.className = 'service-btn';
+  siteBtn.className = 'service-btn';
+  if(networkId === 'orange'){ callBtn.classList.add('orange'); siteBtn.classList.add('orange'); }
+  if(networkId === 'vodafone'){ callBtn.classList.add('vodafone'); siteBtn.classList.add('vodafone'); }
+  if(networkId === 'etisalat'){ callBtn.classList.add('etisalat'); siteBtn.classList.add('etisalat'); }
+  if(networkId === 'we'){ callBtn.classList.add('we'); siteBtn.classList.add('we'); }
+}
+
+(async function init(){
+  const data = await loadData();
+  if(!data) return;
+
+  // render network list (sidebar)
+  const nl = $('#network-list');
+  nl.innerHTML = '';
+  data.networks.forEach(n=>{
+    const btn = create('button',{class:'net-btn', onclick:()=> selectNetwork(n.id)}, n.displayName);
+    nl.appendChild(btn);
+  });
+
+  // select first by default
+  function selectNetwork(id){
+    const network = data.networks.find(x=>x.id === id);
+    if(!network) return;
+    $('#network-title').textContent = network.displayName;
+    const list = $('#codes-list');
+    list.innerHTML = '';
+    network.codes.forEach(item=>{
+      const left = create('div',{class:'code-left'}, [
+        create('div',{class:'code-text'}, item.code),
+        create('div',{class:'code-desc'}, item.desc)
+      ]);
+      const copyBtn = create('button',{class:'action-btn copy', onclick:()=> copyText(item.code)}, 'نسخ');
+      const callBtn = create('button',{class:'action-btn call', onclick:()=> dial(item.code)}, 'اتصال');
+      const actions = create('div',{class:'card-actions'}, [copyBtn, callBtn]);
+      const card = create('div',{class:'code-card'}, [left, actions]);
+      list.appendChild(card);
     });
-    card.querySelector('.fav').addEventListener('click', ()=> {
-      toggleFav(it.id);
-      card.querySelector('.fav').textContent = getFavs().includes(it.id) ? '★' : '☆';
-    });
-    listEl.appendChild(card);
-  });
-}
 
-function copyText(text, btn){
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(()=>{
-      const prev = btn.textContent;
-      btn.textContent = 'تم النسخ';
-      setTimeout(()=> btn.textContent = prev, 1000);
-    }).catch(()=> fallbackCopy(text, btn));
-  } else fallbackCopy(text, btn);
-}
-function fallbackCopy(text, btn){
-  const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); const prev = btn.textContent; btn.textContent='تم النسخ'; setTimeout(()=>btn.textContent=prev,1000); } catch(e){}
-  document.body.removeChild(ta);
-}
+    // show service row and wire buttons
+    const serviceRow = $('#service-row');
+    serviceRow.hidden = false;
+    applyServiceStyle(id);
 
-function applyFilters(op='all', q=''){
-  q = (q||'').trim().toLowerCase();
-  let results = allData.filter(it => {
-    if(op && op !== 'all' && it.operator !== op) return false;
-    if(showFavs && !getFavs().includes(it.id)) return false;
-    if(!q) return true;
-    return (it.title && it.title.toLowerCase().includes(q)) || (it.desc && it.desc.toLowerCase().includes(q)) || (it.code && it.code.toLowerCase().includes(q));
-  });
-  render(results);
-}
+    const csCall = $('#cs-call');
+    const csSite = $('#cs-site');
 
-// init
-loadData().then(data=>{
-  allData = Array.isArray(data) ? data : [];
-  // replace embedded fallback so file:// users can still use
-  document.getElementById('embedded-data').textContent = JSON.stringify(allData);
-  applyFilters('all','');
-
-  // nav buttons
-  document.querySelectorAll('.nav-btn').forEach(b=>{
-    b.addEventListener('click', ()=> {
-      document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      const op = b.dataset.op || 'all';
-      applyFilters(op, searchEl.value);
-    });
-  });
-
-  // search
-  searchEl.addEventListener('input', ()=> {
-    const active = document.querySelector('.nav-btn.active');
-    const op = active ? active.dataset.op : 'all';
-    applyFilters(op, searchEl.value);
-  });
-
-  // favorites toggle
-  favToggle.addEventListener('click', ()=> {
-    showFavs = !showFavs;
-    favToggle.classList.toggle('active', showFavs);
-    favToggle.textContent = showFavs ? 'عرض الكل' : 'المفضلات';
-    const active = document.querySelector('.nav-btn.active');
-    const op = active ? active.dataset.op : 'all';
-    applyFilters(op, searchEl.value);
-  });
-});
-
-// PWA install flow
-window.addEventListener('beforeinstallprompt', (e)=>{
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'inline-block';
-});
-installBtn.addEventListener('click', async ()=>{
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const choice = await deferredPrompt.userChoice;
-  if(choice.outcome === 'accepted'){
-    console.log('User accepted install');
+    csCall.onclick = () => {
+      if(network.customer && network.customer.number) dial(network.customer.number);
+      else alert('رقم خدمة العملاء غير متوفر لهذه الشبكة');
+    };
+    csSite.onclick = () => {
+      if(network.customer && network.customer.site) openSite(network.customer.site);
+      else alert('الموقع الرسمي غير متوفر لهذه الشبكة');
+    };
   }
-  deferredPrompt = null;
-  installBtn.style.display = 'none';
-});
 
-// hide install btn if not supported
-if (!window.matchMedia) {
-  // nothing
-}
-if (!('BeforeInstallPromptEvent' in window) && !('onbeforeinstallprompt' in window)) {
-  // show it anyway; browsers vary. Keep visible — browser will ignore if unsupported.
-}
-
-// small particles effect for cinematic feel
-(function particles(){
-  const canvas = document.getElementById('particles');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  let W, H, particles=[];
-  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize);
-  resize();
-  function create(){
-    particles = [];
-    const count = Math.max(Math.floor(W/60), 30);
-    for(let i=0;i<count;i++){
-      particles.push({
-        x: Math.random()*W,
-        y: Math.random()*H,
-        r: Math.random()*1.8 + 0.4,
-        vx: (Math.random()-0.5)*0.2,
-        vy: (Math.random()*0.6)+0.1,
-        alpha: Math.random()*0.6 + 0.15
-      });
-    }
-  }
-  create();
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    for(const p of particles){
-      p.x += p.vx;
-      p.y += p.vy;
-      if(p.y > H+10){ p.y = -10; p.x = Math.random()*W; }
-      if(p.x < -10) p.x = W+10;
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fill();
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
+  if(data.networks.length) selectNetwork(data.networks[0].id);
 })();
